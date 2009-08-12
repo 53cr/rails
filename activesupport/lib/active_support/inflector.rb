@@ -4,9 +4,12 @@ require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/string/access'
 require 'active_support/core_ext/string/multibyte'
 
+require 'active_support/ffi'
+
 module ActiveSupport
   class FFI
     attach_function :inflector_camelize, [:pointer, :bool], :string
+    attach_function :inflector_underscore, [:pointer], :string
   end
 
   # The Inflector transforms words from singular to plural, class names to table names, modularized class names to ones without,
@@ -188,7 +191,7 @@ module ActiveSupport
     #   "active_record/errors".camelize(:lower) # => "activeRecord::Errors"
 
     def camelize(lower_case_and_underscored_word, first_letter_in_uppercase = true)
-      ::ActiveSupport::FFI.inflector_camelize(lower_case_and_underscored_word, first_letter_in_uppercase)
+      ::ActiveSupport::FFI.inflector_camelize(lower_case_and_underscored_word.to_s, first_letter_in_uppercase)
     end
       
     # Capitalizes all the words and replaces some characters in the string to create
@@ -212,11 +215,7 @@ module ActiveSupport
     #   "ActiveRecord".underscore         # => "active_record"
     #   "ActiveRecord::Errors".underscore # => active_record/errors
     def underscore(camel_cased_word)
-      camel_cased_word.to_s.gsub(/::/, '/').
-        gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
-        gsub(/([a-z\d])([A-Z])/,'\1_\2').
-        tr("-", "_").
-        downcase
+      ::ActiveSupport::FFI.inflector_underscore(camel_cased_word.to_s)
     end
 
     # Replaces underscores with dashes in the string.

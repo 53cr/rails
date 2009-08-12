@@ -5,6 +5,37 @@
 
 // inflector //////////////////////////////
 char *
+inflector_underscore(char *str)
+{
+  char *newstr = malloc(strlen(str)*sizeof(char)*2);
+  char *cp;
+  char prev = NULL;
+
+  for (cp=newstr; *str != NULL; prev=*str++) {
+
+    // replace :: with /
+    if (*str == ':' && *(str+1) == ':') {
+      *cp++ = '/';
+      *str++;
+    } else {
+      
+      if ((isupper(prev) && isupper(*str) && islower(*(str+1)))
+          || ((islower(prev)||isdigit(prev)) && isupper(*str))) {
+        *cp++ = '_';
+      }
+      
+      if (*str == '-') {
+        *cp++ = '_';
+      } else {
+        *cp++ = tolower(*str);
+      }
+    }
+  }
+  *cp = '\0';
+  return newstr;
+}
+
+char *
 inflector_camelize(char *str, bool first_letter_uppercase)
 {
   bool cap_next = first_letter_uppercase;
@@ -18,6 +49,7 @@ inflector_camelize(char *str, bool first_letter_uppercase)
       *cp++ = ':';
     } else if (*str == '_') {
       cap_next = true;
+      /* Skip over -- don't print anything. */
     } else {
       if (cap_next) {
         *cp++ = toupper(*str);
