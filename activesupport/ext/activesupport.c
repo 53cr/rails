@@ -36,6 +36,23 @@ inflector_underscore(char *str)
 }
 
 char *
+inflector_dasherize(char *str)
+{
+  char *newstr = malloc(strlen(str)*sizeof(char));
+  char *cp;
+
+  for (cp=newstr; *str != NULL; *str++) {
+    if (*str == '_') {
+      *cp++ = '-';
+    } else {
+      *cp++ = *str;
+    }
+  }
+  
+  return newstr;
+}
+
+char *
 inflector_camelize(char *str, bool first_letter_uppercase)
 {
   bool cap_next = first_letter_uppercase;

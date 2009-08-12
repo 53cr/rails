@@ -8,8 +8,9 @@ require 'active_support/ffi'
 
 module ActiveSupport
   class FFI
-    attach_function :inflector_camelize, [:pointer, :bool], :string
-    attach_function :inflector_underscore, [:pointer], :string
+    attach_function :inflector_camelize,   [:pointer, :bool], :string
+    attach_function :inflector_underscore, [:pointer],        :string
+    attach_function :inflector_dasherize,  [:pointer],        :string
   end
 
   # The Inflector transforms words from singular to plural, class names to table names, modularized class names to ones without,
@@ -215,7 +216,7 @@ module ActiveSupport
     #   "ActiveRecord".underscore         # => "active_record"
     #   "ActiveRecord::Errors".underscore # => active_record/errors
     def underscore(camel_cased_word)
-      ::ActiveSupport::FFI.inflector_underscore(camel_cased_word.to_s)
+      ::ActiveSupport::FFI.inflector_underscore(camel_cased_word)
     end
 
     # Replaces underscores with dashes in the string.
@@ -223,7 +224,7 @@ module ActiveSupport
     # Example:
     #   "puni_puni" # => "puni-puni"
     def dasherize(underscored_word)
-      underscored_word.gsub(/_/, '-')
+      ::ActiveSupport::FFI.inflector_dasherize(underscored_word)
     end
 
     # Capitalizes the first word and turns underscores into spaces and strips a
