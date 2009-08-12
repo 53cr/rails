@@ -5,6 +5,10 @@ require 'active_support/core_ext/string/access'
 require 'active_support/core_ext/string/multibyte'
 
 module ActiveSupport
+  class FFI
+    attach_function :inflector_camelize, [:pointer, :bool], :string
+  end
+
   # The Inflector transforms words from singular to plural, class names to table names, modularized class names to ones without,
   # and class names to foreign keys. The default inflections for pluralization, singularization, and uncountable words are kept
   # in inflections.rb.
@@ -182,14 +186,11 @@ module ActiveSupport
     #   "active_record".camelize(:lower)        # => "activeRecord"
     #   "active_record/errors".camelize         # => "ActiveRecord::Errors"
     #   "active_record/errors".camelize(:lower) # => "activeRecord::Errors"
-    def camelize(lower_case_and_underscored_word, first_letter_in_uppercase = true)
-      if first_letter_in_uppercase
-        lower_case_and_underscored_word.to_s.gsub(/\/(.?)/) { "::#{$1.upcase}" }.gsub(/(?:^|_)(.)/) { $1.upcase }
-      else
-        lower_case_and_underscored_word.to_s.first.downcase + camelize(lower_case_and_underscored_word)[1..-1]
-      end
-    end
 
+    def camelize(lower_case_and_underscored_word, first_letter_in_uppercase = true)
+      ::ActiveSupport::FFI.inflector_camelize(lower_case_and_underscored_word, first_letter_in_uppercase)
+    end
+      
     # Capitalizes all the words and replaces some characters in the string to create
     # a nicer looking title. +titleize+ is meant for creating pretty output. It is not
     # used in the Rails internals.

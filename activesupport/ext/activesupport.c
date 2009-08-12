@@ -1,10 +1,35 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 // inflector //////////////////////////////
+char *
+inflector_camelize(char *str, bool first_letter_uppercase)
+{
+  bool cap_next = first_letter_uppercase;
+  char *newstr = malloc(strlen(str)*sizeof(char));
+  char *cp;
 
-
+  for (cp=newstr; *str != NULL; *str++) {
+    if (*str == '/') {
+      cap_next = true;
+      *cp++ = ':';
+      *cp++ = ':';
+    } else if (*str == '_') {
+      cap_next = true;
+    } else {
+      if (cap_next) {
+        *cp++ = toupper(*str);
+        cap_next = false;
+      } else {
+        *cp++ = tolower(*str);
+      }
+    }
+  }
+  *cp = '\0';
+  return newstr;
+}
 
 
 // starts_ends_with.rb //////////////////////////////
