@@ -23,7 +23,6 @@ task :default => :test
   end
 end
 
-
 desc "Generate documentation for the Rails framework"
 Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_dir = 'doc/rdoc'

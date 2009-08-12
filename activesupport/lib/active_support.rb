@@ -21,7 +21,17 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
+begin
+  require 'rubygems'
+rescue LoadError; end
+require 'ffi'
+
 module ActiveSupport
+  class FFI
+    extend ::FFI::Library
+    ffi_lib 'activesupport'
+  end
+
   class << self
     attr_accessor :load_all_hooks
     def on_load_all(&hook) load_all_hooks << hook end
