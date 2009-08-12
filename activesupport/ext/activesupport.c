@@ -2,6 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+// inflector //////////////////////////////
+
+
+
+
 // starts_ends_with.rb //////////////////////////////
 bool
 string_starts_with(char *str, char *substr)

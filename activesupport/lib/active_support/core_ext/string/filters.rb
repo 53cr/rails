@@ -13,15 +13,13 @@ class String
   #   %{ Multi-line
   #      string }.squish                   # => "Multi-line string"
   #   " foo   bar    \n   \t   boo".squish # => "foo bar boo"
-
   def squish
     ActiveSupport::FFI.string_squish(self)
   end
 
   # Performs a destructive squish. See String#squish.
+  # TODO: Make this naturally destructive? Can I do that with FFI?
   def squish!
-    strip!
-    gsub!(/\s+/, ' ')
-    self
+    replace(ActiveSupport::FFI.string_squish(self))
   end
 end
