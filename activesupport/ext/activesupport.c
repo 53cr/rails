@@ -48,7 +48,7 @@ inflector_dasherize(char *str)
       *cp++ = *str;
     }
   }
-  
+  *cp = '\0';
   return newstr;
 }
 
