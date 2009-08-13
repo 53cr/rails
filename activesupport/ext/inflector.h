@@ -1,4 +1,9 @@
 #pragma once
+#include <stdbool.h>
+
+#ifdef BUILD_TEST
+void test_inflector();
+#endif
 
 char *inflector_underscore(char *str);
 char *inflector_parameterize(char *str, char *sep);

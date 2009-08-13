@@ -1,9 +1,18 @@
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
+#include <assert.h>
 #include <ctype.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "inflector.h"
+
+#ifdef BUILD_TEST
+void
+test_inflector()
+{
+  CU_ASSERT_STRING_EQUAL("a","a");
+}
+#endif
 
 char *
 inflector_underscore(char *str)
@@ -36,12 +45,17 @@ inflector_underscore(char *str)
   return newstr;
 }
 
-char * //FIXME Pretty sure this is segfaulting.
+char *
 inflector_parameterize(char *str, char *sep)
 {
   bool separated = true;
   int sep_len = strlen(sep);
-  char *newstr = malloc((strlen(str)*strlen(sep)+1)*sizeof(char));
+  char *newstr;
+  if (sep_len == 0) {
+    newstr = malloc((strlen(str)+1)*sizeof(char));
+  } else {
+    newstr = malloc((strlen(str)*sep_len+1)*sizeof(char));
+  }
   char *cp;
   
 
@@ -88,18 +102,18 @@ inflector_dasherize(char *str)
   return newstr;
 }
 
-    char *
-    inflector_demodulize(char *str)
-    {
-      char *last_part;
-      
-      for (last_part=str; *str != '\0'; str++) {
-        if (*str == ':' && *(str+1) == ':') {
-          last_part = str+2;
-        }
-      }
-      return strdup(last_part);
+char *
+inflector_demodulize(char *str)
+{
+  char *last_part;
+  
+  for (last_part=str; *str != '\0'; str++) {
+    if (*str == ':' && *(str+1) == ':') {
+      last_part = str+2;
     }
+  }
+  return strdup(last_part);
+}
 
 char *
 inflector_camelize(char *str, bool first_letter_uppercase)
