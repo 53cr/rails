@@ -269,7 +269,7 @@ module ActiveSupport
     def parameterize(string, sep = '-')
       # replace accented chars with their ascii equivalents
       transliterated_string = transliterate(string)
-      ::ActiveSupport::FFI.inflector_parameterize(string, sep)
+      ::ActiveSupport::FFI.inflector_parameterize(transliterated_string.to_s, sep)
     end
 
 

@@ -18,14 +18,14 @@ char *
 string_squish(char *str)
 {
   bool in_space = false;
-  char *newstr = (char *)malloc(strlen(str)*(sizeof (char)));
+  char *newstr = (char *)malloc((strlen(str)+1)*(sizeof (char)));
   char *cp;
 
   while (_is_space(*str)) {
-    *str++;
+    str++;
   }
 
-  for (cp = newstr; *str != NULL; *str++) {
+  for (cp = newstr; *str != '\0'; str++) {
     if (_is_space(*str)) {
       if (!in_space) {
         in_space = true;
