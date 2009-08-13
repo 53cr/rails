@@ -8,9 +8,11 @@ require 'active_support/ffi'
 
 module ActiveSupport
   class FFI
-    attach_function :inflector_camelize,   [:pointer, :bool], :string
-    attach_function :inflector_underscore, [:pointer],        :string
-    attach_function :inflector_dasherize,  [:pointer],        :string
+    attach_function :inflector_camelize,     [:pointer, :bool],    :string
+    attach_function :inflector_underscore,   [:pointer],           :string
+    attach_function :inflector_dasherize,    [:pointer],           :string
+    attach_function :inflector_demodulize,   [:pointer],           :string
+    attach_function :inflector_parameterize, [:pointer, :pointer], :string
   end
 
   # The Inflector transforms words from singular to plural, class names to table names, modularized class names to ones without,
@@ -246,7 +248,7 @@ module ActiveSupport
     #   "ActiveRecord::CoreExtensions::String::Inflections".demodulize # => "Inflections"
     #   "Inflections".demodulize                                       # => "Inflections"
     def demodulize(class_name_in_module)
-      class_name_in_module.to_s.gsub(/^.*::/, '')
+      ::ActiveSupport::FFI.inflector_demodulize(class_name_in_module)
     end
 
     # Replaces special characters in a string so that it may be used as part of a 'pretty' URL.
@@ -266,17 +268,10 @@ module ActiveSupport
     #   # => <a href="/person/1-donald-e-knuth">Donald E. Knuth</a>
     def parameterize(string, sep = '-')
       # replace accented chars with their ascii equivalents
-      parameterized_string = transliterate(string)
-      # Turn unwanted chars into the separator
-      parameterized_string.gsub!(/[^a-z0-9\-_\+]+/i, sep)
-      unless sep.blank?
-        re_sep = Regexp.escape(sep)
-        # No more than one of the separator in a row.
-        parameterized_string.gsub!(/#{re_sep}{2,}/, sep)
-        # Remove leading/trailing separator.
-        parameterized_string.gsub!(/^#{re_sep}|#{re_sep}$/i, '')
-      end
-      parameterized_string.downcase
+      transliterated_string = transliterate(string)
+      #transliterated_string = string
+      
+      ::ActiveSupport::FFI.inflector_parameterize(transliterated_string, sep)
     end
 
 
