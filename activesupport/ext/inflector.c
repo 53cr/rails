@@ -6,14 +6,6 @@
 
 #include "inflector.h"
 
-#ifdef BUILD_TEST
-void
-test_inflector()
-{
-  CU_ASSERT_STRING_EQUAL("a","a");
-}
-#endif
-
 char *
 inflector_underscore(char *str)
 {
@@ -163,7 +155,7 @@ inflector_foreign_key(char *str, bool use_underscore)
 }
 
 	
-char *
+static char *
 _itoa(int n) {
 
   char tmp_char;
@@ -181,9 +173,9 @@ _itoa(int n) {
   // Apply negative sign
   if (temp < 0) *ptr++ = '-';
   *ptr-- = '\0';
-  while(ptr1 < ptr) {
+  while (ptr1 < ptr) {
     tmp_char = *ptr;
-    *ptr--= *ptr1;
+    *ptr-- = *ptr1;
     *ptr1++ = tmp_char;
   }
   return result;
@@ -194,9 +186,11 @@ inflector_ordinalize(int n)
 {
   char *word = _itoa(n);
   int len = strlen(word);
-  realloc(word, (len+3)*sizeof(char));
+  if (len > 10) {
+    realloc(word, (len+3)*sizeof(char));
+  }
 
-  int x = n%100;
+  int x = n % 100;
   if ((x > 10) && (x < 14)) {
     strcpy(word+len, "th");
   } else {
