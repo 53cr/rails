@@ -43,3 +43,9 @@ string_squish(char *str)
   
   return newstr;
 }
+
+void
+test_string_squish()
+{
+  // `rake test` actually does a pretty good job catching all the edge cases for this one I think.
+}

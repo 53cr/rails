@@ -3,6 +3,7 @@ CFLAGS=-Wall -O3
 TARGETFLAGS=-dynamiclib
 
 OBJ= \
+	utils.o \
 	inflector.o \
 	core_ext/string/starts_ends_with.o \
 	core_ext/string/filters.o \
@@ -10,6 +11,7 @@ OBJ= \
 
 HDR= \
 	activesupport.h \
+	utils.h \
 	inflector.h \
 	core_ext/string/starts_ends_with.h \
 	core_ext/string/filters.h \
