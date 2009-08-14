@@ -13,6 +13,8 @@ module ActiveSupport
     attach_function :inflector_dasherize,    [:pointer],           :string
     attach_function :inflector_demodulize,   [:pointer],           :string
     attach_function :inflector_parameterize, [:pointer, :pointer], :string
+    attach_function :inflector_foreign_key,  [:pointer, :bool],    :string
+    attach_function :inflector_ordinalize,   [:int],               :string
   end
 
   # The Inflector transforms words from singular to plural, class names to table names, modularized class names to ones without,
@@ -330,7 +332,7 @@ module ActiveSupport
     #   "Message".foreign_key(false) # => "messageid"
     #   "Admin::Post".foreign_key    # => "post_id"
     def foreign_key(class_name, separate_class_name_and_id_with_underscore = true)
-      underscore(demodulize(class_name)) + (separate_class_name_and_id_with_underscore ? "_id" : "id")
+      ::ActiveSupport::FFI.inflector_foreign_key(class_name, separate_class_name_and_id_with_underscore)
     end
 
     # Ruby 1.9 introduces an inherit argument for Module#const_get and
@@ -385,14 +387,20 @@ module ActiveSupport
     #   ordinalize(1002)  # => "1002nd"
     #   ordinalize(1003)  # => "1003rd"
     def ordinalize(number)
-      if (11..13).include?(number.to_i % 100)
-        "#{number}th"
-      else
-        case number.to_i % 10
-          when 1; "#{number}st"
-          when 2; "#{number}nd"
-          when 3; "#{number}rd"
-          else    "#{number}th"
+      number = number.to_i
+
+      if number.class == Fixnum
+        ::ActiveSupport::FFI.inflector_ordinalize(number)
+      else #presumably Bignum
+        if (11..13).include?(number % 100)
+          "#{number}th"
+        else
+          case number.to_i % 10
+            when 1; "#{number}st"
+            when 2; "#{number}nd"
+            when 3; "#{number}rd"
+            else    "#{number}th"
+          end
         end
       end
     end

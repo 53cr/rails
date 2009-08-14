@@ -142,3 +142,77 @@ inflector_camelize(char *str, bool first_letter_uppercase)
   *cp = '\0';
   return newstr;
 }
+
+char *
+inflector_foreign_key(char *str, bool use_underscore)
+{
+  int len = strlen(str);
+  char *ret = malloc((2*len+1)*sizeof(char));
+  char *temp = inflector_underscore(inflector_demodulize(str));
+  char *cp = ret;
+  
+  while (*cp++ = *temp++) ;
+
+  if (use_underscore) {
+    strcpy(cp-1, "_id");
+  } else {
+    strcpy(cp-1, "id");
+  }
+
+  return ret;
+}
+
+	
+char *
+_itoa(int n) {
+
+  char tmp_char;
+  int  temp;
+  char *result = malloc(32*sizeof(char));
+  char *ptr = result;
+  char *ptr1 = result;
+  
+  do {
+    temp = n;
+    n /= 10;
+    *ptr++ = "9876543210123456789" [9 + (temp - n * 10)];
+  } while (n);
+  
+  // Apply negative sign
+  if (temp < 0) *ptr++ = '-';
+  *ptr-- = '\0';
+  while(ptr1 < ptr) {
+    tmp_char = *ptr;
+    *ptr--= *ptr1;
+    *ptr1++ = tmp_char;
+  }
+  return result;
+}
+
+char *
+inflector_ordinalize(int n)
+{
+  char *word = _itoa(n);
+  int len = strlen(word);
+  realloc(word, (len+3)*sizeof(char));
+
+  int x = n%100;
+  if ((x > 10) && (x < 14)) {
+    strcpy(word+len, "th");
+  } else {
+    switch(n % 10) {
+    case 1:
+      strcpy(word+len, "st");
+      break;
+    case 2:
+      strcpy(word+len, "nd");
+      break;
+    case 3:
+      strcpy(word+len, "rd");
+      break;
+    default:
+      strcpy(word+len, "th");
+    }
+  }
+  return word;
+}
