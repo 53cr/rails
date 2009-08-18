@@ -24,13 +24,10 @@
 begin
   require 'rubygems'
 rescue LoadError; end
-require 'ffi'
+
+require 'ext/active_support_c'
 
 module ActiveSupport
-  class FFI
-    extend ::FFI::Library
-    ffi_lib 'activesupport'
-  end
 
   class << self
     attr_accessor :load_all_hooks

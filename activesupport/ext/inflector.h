@@ -1,14 +1,10 @@
 #pragma once
-#include <stdbool.h>
+#include "ruby.h"
 
-#ifdef BUILD_TEST
-void test_inflector();
-#endif
-
-char *inflector_underscore(char *str);
-char *inflector_parameterize(char *str, char *sep);
-char *inflector_dasherize(char *str);
-char *inflector_demodulize(char *str);
-char *inflector_camelize(char *str, bool first_letter_uppercase);
-char *inflector_foreign_key(char *str, bool use_underscore);
-char *inflector_ordinalize(int n);
+VALUE inflector_underscore(VALUE self, VALUE str);
+VALUE inflector_parameterize(VALUE self, VALUE str, VALUE sep);
+VALUE inflector_dasherize(VALUE self, VALUE str);
+VALUE inflector_demodulize(VALUE self, VALUE str);
+VALUE inflector_camelize(VALUE self, VALUE str, VALUE first_letter_uppercase);
+VALUE inflector_foreign_key(VALUE self, VALUE str, VALUE use_underscore);
+VALUE inflector_ordinalize(VALUE self, VALUE n);

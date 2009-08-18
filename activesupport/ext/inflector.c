@@ -5,208 +5,220 @@
 #include <string.h>
 
 #include "inflector.h"
+#include "ruby.h"
 
-char *
-inflector_underscore(char *str)
+VALUE inflector_underscore(VALUE self, VALUE rstr)
 {
-  char *newstr = malloc((strlen(str)*2+1)*sizeof(char));
-  char *cp;
-  char prev = '\0';
+  Check_Type(rstr, T_STRING);
 
-  for (cp=newstr; *str != '\0'; prev=*str++) {
+  VALUE  ret  = rb_str_new("", 0);
+  char * ip   = StringValuePtr(rstr);
+  int    ilen = RSTRING_LEN(rstr);
+  char   prev = '\0';
+  char   temp;
+  int    i;
+  
+  for (i = 0; i < ilen; i++, prev=*ip++) {
 
     // replace :: with /
-    if (*str == ':' && *(str+1) == ':') {
-      *cp++ = '/';
-      str++;
+    if (*ip == ':' && *(ip+1) == ':') {
+      rb_str_cat(ret, "/", 1);
+      ip++;
+      i++; // fastforward one char.
     } else {
-      
-      if ((isupper(prev) && isupper(*str) && islower(*(str+1)))
-          || ((islower(prev)||isdigit(prev)) && isupper(*str))) {
-        *cp++ = '_';
+      if ((isupper(prev) && isupper(*ip) && islower(*(ip+1)))
+          || ((islower(prev)||isdigit(prev)) && isupper(*ip))) {
+        rb_str_cat(ret, "_", 1);
       }
-      
-      if (*str == '-') {
-        *cp++ = '_';
+      if (*ip == '-') {
+        rb_str_cat(ret, "_", 1);
       } else {
-        *cp++ = tolower(*str);
+        temp = tolower(*ip);
+        rb_str_cat(ret, &temp, 1);
       }
     }
   }
-  *cp = '\0';
-  return newstr;
+  return ret;
 }
 
-char *
-inflector_parameterize(char *str, char *sep)
+VALUE inflector_parameterize(VALUE self, VALUE str, VALUE sep)
 {
-  bool separated = true;
-  int sep_len = strlen(sep);
-  char *newstr;
-  if (sep_len == 0) {
-    newstr = malloc((strlen(str)+1)*sizeof(char));
-  } else {
-    newstr = malloc((strlen(str)*sep_len+1)*sizeof(char));
-  }
-  char *cp;
-  
+  Check_Type(str, T_STRING);
+  Check_Type(sep, T_STRING);
 
-  for (cp=newstr; *str != '\0'; str++) {
-    if (isalnum(*str) || *str == '-' || *str == '_' || *str == '+') {
+  VALUE  ret       = rb_str_new("", 0);
+  int    sep_len   = RSTRING_LEN(sep);
+  int    ilen      = RSTRING_LEN(str);
+  char * ip        = RSTRING_PTR(str);
+  bool   separated = true;
+  int    i;
+  char   tmp;
+  
+  for (i = 0; i < ilen; i++, ip++) {
+    if (isalnum(*ip) || *ip == '-' || *ip == '_' || *ip == '+') { // normal char
       separated = false;
-      *cp++ = tolower(*str);
-    } else { 
-      if (!separated && *(str+1) != '\0') { // catch end case too...
+      tmp = tolower(*ip);
+      rb_str_cat(ret, &tmp, 1);
+    } else { // replace with separator
+      if (!separated) {
         separated = true;
-        strncpy(cp, sep, sep_len);
-        cp += sep_len;
+        rb_str_cat(ret, RSTRING_PTR(sep), sep_len);
       }
     }
   }
-  *cp = '\0';
 
   // cp points to the end of the return string.
   // Get rid of trailing separators, if any.
-  if (strlen(sep)) {
-    while (!strncmp(sep, cp-sep_len, sep_len)) {
-      cp -= sep_len;
-      *cp = '\0';
-    }
+  if (RSTRING_LEN(ret) && !memcmp(RSTRING_PTR(sep),
+                                  RSTRING_PTR(ret) + RSTRING_LEN(ret) - sep_len,
+                                  sep_len * sizeof (char)))
+  {
+    ret = rb_str_new(RSTRING_PTR(ret), RSTRING_LEN(ret) - sep_len);
   }
-  
-  return newstr;
+
+  return ret;
 }
 
-char *
-inflector_dasherize(char *str)
+VALUE inflector_dasherize(VALUE self, VALUE str)
 {
-  char *newstr = malloc((strlen(str)+1)*sizeof(char));
-  char *cp;
-
-  for (cp=newstr; *str != '\0'; str++) {
-    if (*str == '_') {
-      *cp++ = '-';
+  Check_Type(str, T_STRING);
+  
+  char * out = ALLOC_N(char, RSTRING_LEN(str) + 1);
+  char * ip  = RSTRING_PTR(str);
+  char * op  = out;
+  int    len = RSTRING_LEN(str);
+  int    i;
+  
+  for (i = 0; i < len; i++, ip++) {
+    if (*ip == '_') {
+      *op++ = '-';
     } else {
-      *cp++ = *str;
+      *op++ = *ip;
     }
   }
-  *cp = '\0';
-  return newstr;
+
+  return rb_str_new(out, len);
 }
 
-char *
-inflector_demodulize(char *str)
+VALUE inflector_demodulize(VALUE self, VALUE rstr)
 {
-  char *last_part;
+  Check_Type(rstr, T_STRING);
+
+  char * str       = RSTRING_PTR(rstr);
+  char * ip        = str;
+  char * last_part = str;
+  int    len       = RSTRING_LEN(rstr);
+  int    olen      = len;
+  int    i;
   
-  for (last_part=str; *str != '\0'; str++) {
-    if (*str == ':' && *(str+1) == ':') {
-      last_part = str+2;
+  for (i = 0; i < len; i++, ip++) {
+    if (*ip == ':' && *(ip+1) == ':') {
+      olen = len - i - 2;
+      last_part = ip + 2;
     }
   }
-  return strdup(last_part);
+  
+  VALUE ret = rb_str_new("", 0);
+  rb_str_cat(ret, last_part, olen);
+  return ret;
 }
 
-char *
-inflector_camelize(char *str, bool first_letter_uppercase)
+VALUE inflector_camelize(VALUE self, VALUE str, VALUE first_letter_uppercase)
 {
-  bool cap_next = first_letter_uppercase;
-  char *newstr = malloc((strlen(str)*2+1)*sizeof(char));
-  char *cp;
-
-  for (cp=newstr; *str != '\0'; str++) {
-    if (*str == '/') {
+  Check_Type(str, T_STRING);
+  
+  VALUE  ret      = rb_str_new("", 0);
+  bool   cap_next = RTEST(first_letter_uppercase);
+  int    ilen     = RSTRING_LEN(str);
+  char * ip       = RSTRING_PTR(str);
+  int    i;
+  char   tmp;
+  
+  for (i = 0; i < ilen; i++, ip++) {
+    if (*ip == '/') {
       cap_next = true;
-      *cp++ = ':';
-      *cp++ = ':';
-    } else if (*str == '_') {
+      rb_str_cat(ret, "::", 2);
+    } else if (*ip == '_') {
       cap_next = true;
-      /* Skip over -- don't print anything. */
+      // Skip over -- don't print anything.
     } else {
       if (cap_next) {
-        *cp++ = toupper(*str);
+        tmp = toupper(*ip);
         cap_next = false;
       } else {
-        *cp++ = tolower(*str);
+        tmp = tolower(*ip);
       }
+      rb_str_cat(ret, &tmp, 1);
     }
   }
-  *cp = '\0';
-  return newstr;
+  return ret;
 }
 
-char *
-inflector_foreign_key(char *str, bool use_underscore)
+VALUE inflector_foreign_key(VALUE self, VALUE str, VALUE use_underscore)
 {
-  int len = strlen(str);
-  char *ret = malloc((2*len+1)*sizeof(char));
-  char *temp = inflector_underscore(inflector_demodulize(str));
-  char *cp = ret;
-  
-  while (*cp++ = *temp++) ;
+  Check_Type(str, T_STRING);
 
-  if (use_underscore) {
-    strcpy(cp-1, "_id");
+  VALUE ret = inflector_underscore(self, inflector_demodulize(self, str));
+
+  if (RTEST(use_underscore)) {
+    rb_str_cat(ret, "_id", 3);
   } else {
-    strcpy(cp-1, "id");
+    rb_str_cat(ret, "id", 2);
   }
 
   return ret;
 }
 
 	
-static char *
-_itoa(int n) {
-
-  char tmp_char;
-  int  temp;
-  char *result = malloc(32*sizeof(char));
-  char *ptr = result;
-  char *ptr1 = result;
+static char * itoa(int n)
+{
+  char   c_tmp;
+  int    i_tmp;
+  char * ret      = ALLOC_N(char, 32);
+  char * ptr      = ret;
+  char * ptr1     = ret;
   
   do {
-    temp = n;
+    i_tmp = n;
     n /= 10;
-    *ptr++ = "9876543210123456789" [9 + (temp - n * 10)];
+    *ptr++ = "9876543210123456789" [9 + (i_tmp - n * 10)];
   } while (n);
   
-  // Apply negative sign
-  if (temp < 0) *ptr++ = '-';
+  if (i_tmp < 0) *ptr++ = '-';
   *ptr-- = '\0';
   while (ptr1 < ptr) {
-    tmp_char = *ptr;
+    c_tmp = *ptr;
     *ptr-- = *ptr1;
-    *ptr1++ = tmp_char;
+    *ptr1++ = c_tmp;
   }
-  return result;
+
+  return ret;
 }
 
-char *
-inflector_ordinalize(int n)
+VALUE inflector_ordinalize(VALUE self, VALUE rn)
 {
-  char *word = _itoa(n);
-  int len = strlen(word);
-  if (len > 10) {
-    realloc(word, (len+3)*sizeof(char));
-  }
+  Check_Type(rn, T_FIXNUM);
+  
+  int   n   = FIX2INT(rn);
+  VALUE ret = rb_str_new2(itoa(n));
+  int   x   = n % 100;
 
-  int x = n % 100;
   if ((x > 10) && (x < 14)) {
-    strcpy(word+len, "th");
+    rb_str_cat(ret, "th", 2);
   } else {
     switch(n % 10) {
     case 1:
-      strcpy(word+len, "st");
+      rb_str_cat(ret, "st", 2);
       break;
     case 2:
-      strcpy(word+len, "nd");
+      rb_str_cat(ret, "nd", 2);
       break;
     case 3:
-      strcpy(word+len, "rd");
+      rb_str_cat(ret, "rd", 2);
       break;
     default:
-      strcpy(word+len, "th");
+      rb_str_cat(ret, "th", 2);
     }
   }
-  return word;
+  return ret;
 }

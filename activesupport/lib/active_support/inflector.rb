@@ -4,18 +4,7 @@ require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/string/access'
 require 'active_support/core_ext/string/multibyte'
 
-require 'active_support/ffi'
-
 module ActiveSupport
-  class FFI
-    attach_function :inflector_camelize,     [:pointer, :bool],    :string
-    attach_function :inflector_underscore,   [:pointer],           :string
-    attach_function :inflector_dasherize,    [:pointer],           :string
-    attach_function :inflector_demodulize,   [:pointer],           :string
-    attach_function :inflector_parameterize, [:pointer, :pointer], :string
-    attach_function :inflector_foreign_key,  [:pointer, :bool],    :string
-    attach_function :inflector_ordinalize,   [:int],               :string
-  end
 
   # The Inflector transforms words from singular to plural, class names to table names, modularized class names to ones without,
   # and class names to foreign keys. The default inflections for pluralization, singularization, and uncountable words are kept
@@ -196,7 +185,7 @@ module ActiveSupport
     #   "active_record/errors".camelize(:lower) # => "activeRecord::Errors"
 
     def camelize(lower_case_and_underscored_word, first_letter_in_uppercase = true)
-      ::ActiveSupport::FFI.inflector_camelize(lower_case_and_underscored_word.to_s, first_letter_in_uppercase)
+      ::ActiveSupport::ASC.camelize(lower_case_and_underscored_word.to_s, first_letter_in_uppercase)
     end
       
     # Capitalizes all the words and replaces some characters in the string to create
@@ -220,7 +209,7 @@ module ActiveSupport
     #   "ActiveRecord".underscore         # => "active_record"
     #   "ActiveRecord::Errors".underscore # => active_record/errors
     def underscore(camel_cased_word)
-      ::ActiveSupport::FFI.inflector_underscore(camel_cased_word)
+      ::ActiveSupport::ASC.underscore(camel_cased_word)
     end
 
     # Replaces underscores with dashes in the string.
@@ -228,7 +217,7 @@ module ActiveSupport
     # Example:
     #   "puni_puni" # => "puni-puni"
     def dasherize(underscored_word)
-      ::ActiveSupport::FFI.inflector_dasherize(underscored_word)
+      ::ActiveSupport::ASC.dasherize(underscored_word)
     end
 
     # Capitalizes the first word and turns underscores into spaces and strips a
@@ -250,7 +239,7 @@ module ActiveSupport
     #   "ActiveRecord::CoreExtensions::String::Inflections".demodulize # => "Inflections"
     #   "Inflections".demodulize                                       # => "Inflections"
     def demodulize(class_name_in_module)
-      ::ActiveSupport::FFI.inflector_demodulize(class_name_in_module)
+      ::ActiveSupport::ASC.demodulize(class_name_in_module)
     end
 
     # Replaces special characters in a string so that it may be used as part of a 'pretty' URL.
@@ -271,7 +260,7 @@ module ActiveSupport
     def parameterize(string, sep = '-')
       # replace accented chars with their ascii equivalents
       transliterated_string = transliterate(string)
-      ::ActiveSupport::FFI.inflector_parameterize(transliterated_string.to_s, sep)
+      ::ActiveSupport::ASC.parameterize(transliterated_string.to_s, sep)
     end
 
 
@@ -332,7 +321,7 @@ module ActiveSupport
     #   "Message".foreign_key(false) # => "messageid"
     #   "Admin::Post".foreign_key    # => "post_id"
     def foreign_key(class_name, separate_class_name_and_id_with_underscore = true)
-      ::ActiveSupport::FFI.inflector_foreign_key(class_name, separate_class_name_and_id_with_underscore)
+      ::ActiveSupport::ASC.foreign_key(class_name, separate_class_name_and_id_with_underscore)
     end
 
     # Ruby 1.9 introduces an inherit argument for Module#const_get and
@@ -389,9 +378,9 @@ module ActiveSupport
     def ordinalize(number)
       number = number.to_i
 
-      if number.class == Fixnum
-        ::ActiveSupport::FFI.inflector_ordinalize(number)
-      else #presumably Bignum
+      begin
+        ::ActiveSupport::ASC.ordinalize(number)
+      rescue TypeError # presumably Bignum
         if (11..13).include?(number % 100)
           "#{number}th"
         else

@@ -1,3 +1,5 @@
 #pragma once
 
-char *string_squish(char *str);
+#include "ruby.h"
+
+VALUE string_squish(VALUE rstr);

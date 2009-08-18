@@ -14,38 +14,39 @@ _is_space(char chr)
   }
 }
 
-char *
-string_squish(char *str)
+VALUE
+string_squish(VALUE rstr)
 {
-  bool in_space = false;
-  char *newstr = (char *)malloc((strlen(str)+1)*(sizeof (char)));
-  char *cp;
+  int ilen = RString(rstr)->len;
+  int olen = ilen;
+  char *ip = RString(rstr)->ptr; 
+  bool in_space = true;
+  int i;
+  struct RString ret;
+  ret->ptr = (char *)malloc(len+1)*(sizeof (char));
+  char *op = ret->ptr;
 
-  while (_is_space(*str)) {
-    str++;
-  }
-
-  for (cp = newstr; *str != '\0'; str++) {
-    if (_is_space(*str)) {
-      if (!in_space) {
+  
+  for (i = 0; i < ilen; i++, ip++) {
+    if (_is_space(*ip)) {
+      if (in_space) {
+        olen--;
+      } else {
         in_space = true;
-        *cp++ = ' ';
+        *op++ = ' ';
       }
     } else {
       in_space = false;
-      *cp++ = *str;
+      *op++ = *ip;
     }
   }
 
-  if (*(cp-1) == ' ') {
-    *(cp-1) = '\0';
+  if (*(op-1) == ' ') {
+    *(op-1) = '\0';
+    olen--;
   }
-  
-  return newstr;
+
+  ret->len = olen;
+  return ret;
 }
 
-void
-test_string_squish()
-{
-  // `rake test` actually does a pretty good job catching all the edge cases for this one I think.
-}

@@ -4,17 +4,22 @@
 #include <ctype.h>
 
 #include "starts_ends_with.h"
+#include "ruby.h"
 
-bool
-string_starts_with(char *str, char *substr)
+VALUE
+string_starts_with(VALUE str, VALUE substr)
 {
-  do { 
-    if (!*substr) {
-      return true;
+  int sublen = RString(substr)->len;
+  char *p1 = RString(str)->ptr;
+  char *p2 = RString(substr)->ptr;
+  
+  while (sublen--) {
+    if (*p1++ != *p2++) {
+      return Qfalse;
     }
-  } while (*str++ == *substr++);
+  }
 
-  return false;
+  return Qtrue;
 }
 
 void
@@ -26,30 +31,30 @@ test_starts_with()
   assert(string_starts_with("", "") == true);
 }
 
-bool
-string_ends_with(char *str, char *substr)
+VALUE
+string_ends_with(VALUE str, VALUE substr)
 {
   int l_str, l_substr;
   char *p_str, *p_substr;
 
-  l_str    = strlen(str);
-  l_substr = strlen(substr);
+  l_str    = RString(str)->len;
+  l_substr = RString(substr)->len;
 
   if (l_substr > l_str) {
-    return false;
+    return Qfalse;
   }
   
-  p_str    = str    + l_str;
-  p_substr = substr + l_substr;
-
-  while (p_substr >= substr) {
+  p_str    = RString(str)->ptr    + l_str;
+  p_substr = RString(substr)->ptr + l_substr;
+  
+  
+  while (p_substr >= RString(substr)->ptr) {
     if (*p_substr-- != *p_str--) {
-      return false;
+      return Qfale;
     }
   }
   
-  return true;
-  
+  return Qtrue;
 }
 
 void

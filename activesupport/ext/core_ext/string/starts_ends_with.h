@@ -1,4 +1,6 @@
 #pragma once
 
-bool string_starts_with(char *str, char *substr);
-bool string_ends_with(char *str, char *substr);
+#include "ruby.h"
+
+VALUE string_starts_with(VALUE str, VALUE substr);
+VALUE string_ends_with(VALUE str, VALUE substr);
